@@ -1,49 +1,56 @@
-
-from flask import Flask, render_template, request
-import joblib
+from flask import Flask, render_template, request, jsonify
+import pickle
 import numpy as np
 
 app = Flask(__name__)
 
-# Load the trained model and scaler pipeline
-model = joblib.load("linear_svm_banknote.pkl")
+# Load the trained Decision Tree model (Gini index)
+# Make sure DTModel.pkl is in the SAME folder as this app.py
+with open('DTModel.pkl', 'rb') as f:
+    model = pickle.load(f)
+
+# Feature order MUST exactly match the order used during training
+FEATURE_ORDER = [
+    'age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg',
+    'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal'
+]
 
 
-@app.route("/")
+@app.route('/')
 def home():
-    return render_template("index.html")
+    return render_template('index.html')
 
 
-@app.route("/predict", methods=["POST"])
+@app.route('/predict', methods=['POST'])
 def predict():
     try:
-        variance = float(request.form["variance"])
-        skewness = float(request.form["skewness"])
-        curtosis = float(request.form["curtosis"])
-        entropy = float(request.form["entropy"])
+        data = request.get_json()
 
-        features = np.array([[
-            variance, skewness, curtosis, entropy
-        ]])
+        # Validate all required fields are present
+        missing = [f for f in FEATURE_ORDER if f not in data or data[f] == '']
+        if missing:
+            return jsonify({'error': f'Missing values for: {", ".join(missing)}'}), 400
 
-        prediction = int(model.predict(features)[0])
+        # Build the feature vector in the correct order
+        features = [float(data[f]) for f in FEATURE_ORDER]
+        input_array = np.array(features).reshape(1, -1)
 
-        if prediction == 0:
-            result = "Counterfeit Banknote"
-        else:
-            result = "Genuine Banknote"
+        prediction = model.predict(input_array)[0]
+        probabilities = model.predict_proba(input_array)[0]
+        confidence = round(float(max(probabilities)) * 100, 2)
 
-        return render_template(
-            "index.html",
-            prediction=result
-        )
+        result = {
+            'prediction': int(prediction),
+            'label': 'Heart Disease Detected' if prediction == 1 else 'No Heart Disease Detected',
+            'confidence': confidence
+        }
+        return jsonify(result)
 
-    except (ValueError, KeyError):
-        return render_template(
-            "index.html",
-            prediction="Please enter valid numerical values."
-        )
+    except ValueError:
+        return jsonify({'error': 'All fields must be valid numbers.'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)
