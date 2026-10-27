@@ -1,0 +1,50 @@
+# Experiment 09: Linear SVM — Counterfeit Banknote Detection
+
+## Aim
+To implement a Linear Support Vector Machine (SVM) classifier to distinguish genuine and counterfeit banknotes using numerical features.
+
+## Problem Statement
+Develop a Linear SVM classification model using the Banknote Authentication dataset and deploy it as a web application using Flask and HTML.
+
+## Technologies Used
+- Python
+- NumPy and Pandas
+- Scikit-learn
+- Flask
+- HTML and CSS
+- Google Colab
+
+## Features
+- Trains a Linear SVM classification model.
+- Uses four numerical banknote features: variance, skewness, curtosis, and entropy.
+- Predicts a banknote's class from user-provided measurements.
+- Evaluates model performance using accuracy, a confusion matrix, precision, recall, and F1-score.
+- Provides a web interface for entering measurements and viewing predictions.
+
+## Project Structure
+- `app.py` — Flask application and prediction endpoint.
+- `templates/index.html` — User interface.
+- `linear_svm_banknote.pkl` — Saved trained model and preprocessing pipeline.
+- `requirements.txt` — Python dependencies.
+
+## How to Run
+
+1. Install the dependencies:
+
+   `pip install -r requirements.txt`
+
+2. Ensure the trained model file is available in the project directory.
+
+3. Start the Flask application:
+
+   `python app.py`
+
+4. Open `http://127.0.0.1:5000` in your browser.
+
+## Model Evaluation
+Record the actual accuracy, confusion matrix, and classification report generated during testing.
+
+## Conclusion
+This experiment demonstrates the use of Linear SVM for binary banknote classification and its integration with a Flask-based web application.
+
+**Note:** Predictions depend on the dataset's class-label mapping and the feature order used during model training. This project uses numerical features, not direct banknote image recognition.
